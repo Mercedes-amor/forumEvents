@@ -12,4 +12,7 @@ router.use("/auth", authRouter)
 const eventsRouter = require("./events.routes")
 router.use("/events", eventsRouter)
 
+const usersRouter = require("./users.routes")
+router.use("/users", usersRouter)
+
 module.exports = router;
