@@ -3,10 +3,10 @@ const { Schema, model } = require("mongoose");
 // TODO: Please make sure you edit the User model to whatever makes sense in this case
 const userSchema = new Schema(
   {
-    role:{
+    role: {
       type: String,
       required: true,
-      enum:["admin", "user"],
+      enum: ["admin", "user"],
       default: "user"
     },
     username: {
@@ -23,10 +23,10 @@ const userSchema = new Schema(
       type: String,
       required: [true, 'Password is required.']
     },
-    eventsAsistance: {
+    eventsAsistance: [{
       type: Schema.Types.ObjectId,
       ref: Event,
-    }
+    }]
   },
 );
 
