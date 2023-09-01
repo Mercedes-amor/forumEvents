@@ -30,7 +30,7 @@ startHour: {
     type: String,
     required: true
 },
-endTHour: {
+endHour: {
     type: String,
     required: true
 },

@@ -2,15 +2,13 @@ const router = require("express").Router();
 const Event = require("../models/Event.model");
 const Session = require("../models/Session.model");
 
-
 // RUTAS DE LOS EVENTOS
 
 // GET "/api/events" => lista de todos los eventos
 
 router.get("/", async (req, res, next) => {
   try {
-    const response = await Event.find()
-   
+    const response = await Event.find();
 
     res.json(response);
   } catch (error) {
@@ -21,12 +19,12 @@ router.get("/", async (req, res, next) => {
 // POST "/api/events" => creamos un nuevo evento
 
 router.post("/", async (req, res, next) => {
-  console.log("viene del body" , req.body)
+  console.log("viene del body", req.body);
   let bodyImg;
   if (req.body.newEvent.imgEvent === "") {
-    bodyImg = "https://ipmark.com/wp-content/uploads/eventos-5-800x445.jpg"
+    bodyImg = "https://ipmark.com/wp-content/uploads/eventos-5-800x445.jpg";
   } else {
-    bodyImg = req.body.newEvent.imgEvent 
+    bodyImg = req.body.newEvent.imgEvent;
   }
   const {
     eventName,
@@ -38,13 +36,18 @@ router.post("/", async (req, res, next) => {
     description,
   } = req.body.newEvent;
 
-
-  if (!eventName || !startDate || !endDate || !itsFree || !capacity || !sector || !description) {
-    res.json("todos los campos deben estar completos")
+  if (
+    !eventName ||
+    !startDate ||
+    !endDate ||
+    !itsFree ||
+    !capacity ||
+    !sector ||
+    !description
+  ) {
+    res.json("todos los campos deben estar completos");
   }
 
- 
-  
   try {
     await Event.create({
       eventName,
@@ -53,7 +56,7 @@ router.post("/", async (req, res, next) => {
       itsFree,
       capacity,
       sector,
-      imgEvent : bodyImg ,
+      imgEvent: bodyImg,
       description,
     });
 
@@ -69,11 +72,11 @@ router.get("/:eventId", async (req, res, next) => {
   const eventId = req.params.eventId;
   try {
     const responseEvent = await Event.findById(eventId);
-    const responseSession = await Session.find({ eventName: req.params.eventId })
-   
+    const responseSession = await Session.find({
+      eventName: req.params.eventId,
+    });
 
-    res.json({responseEvent, responseSession} );
-
+    res.json({ responseEvent, responseSession });
   } catch (error) {
     next(error);
   }
@@ -94,8 +97,16 @@ router.put("/:eventId", async (req, res, next) => {
     description,
   } = req.body.editEvent;
 
-  if (!eventName || !startDate || !endDate || !itsFree || !capacity || !sector || !description) {
-    res.json("todos los campos deben estar completos")
+  if (
+    !eventName ||
+    !startDate ||
+    !endDate ||
+    !itsFree ||
+    !capacity ||
+    !sector ||
+    !description
+  ) {
+    res.json("todos los campos deben estar completos");
   }
 
   try {
@@ -116,25 +127,21 @@ router.put("/:eventId", async (req, res, next) => {
   }
 });
 
-
-
 // DELETE "/api/events/:eventId" => esta ruta elimina un evento
 
 router.delete("/:eventId", async (req, res, next) => {
-
   const eventId = req.params.eventId;
   try {
-    await Event.findByIdAndDelete(eventId)
+    await Event.findByIdAndDelete(eventId);
     await Session.deleteMany({
-      eventName: eventId
-    })
+      eventName: eventId,
+    });
 
-    res.json("Este evento fue eliminado.")
+    res.json("Este evento fue eliminado.");
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
-
+});
 
 // RUTAS DE LAS SESIONES
 
@@ -152,46 +159,59 @@ router.delete("/:eventId", async (req, res, next) => {
 //   }
 // })
 
-
 // POST "/api/events/:eventId/sessions" => añadir sesiones a un evento
 router.post("/:eventId/sessions", async (req, res, next) => {
+  const {
+    sessionName,
+    description,
+    day,
+    dateSession,
+    startHour,
+    endHour,
+    isAvailable,
+    hall,
+    capacityHall,
+  } = req.body.newSession;
 
-  const { sessionName, description, day, dateSession, startHour, endTHour, isAvailable, hall, capacityHall } = req.body
-  
-  if (!sessionName || !description || !day || !dateSession || !startHour || !endTHour || !isAvailable) {
-    res.json("todos los campos deben estar completos")
+  if (
+    !sessionName ||
+    !description ||
+    !day ||
+    !dateSession ||
+    !startHour ||
+    !endHour ||
+    !isAvailable
+  ) {
+    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" })
+    return;;
   }
 
   try {
-    const response = await Session.create({
+     await Session.create({
       sessionName,
       eventName: req.params.eventId,
       description,
       day,
       dateSession,
       startHour,
-      endTHour,
+      endHour,
       isAvailable,
       hall,
-      capacityHall
+      capacityHall,
+    });
 
-    })
-
-    res.json(response)
-    console.log("params", req.params.eventId)
-
+    res.json({successFullMessage: "La sesión fue creada con exito"});
+   // console.log("params", req.params.eventId);
   } catch (error) {
-    next(error)
+    next(error);
   }
-
-
-})
+});
 
 // PUT "/api/events/:eventId/sessions/:sessionId" => Editar detalles de una sesión
 
 router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
-  const {sessionId, eventId}  = req.params
- 
+  const { sessionId, eventId } = req.params;
+
   const {
     sessionName,
     eventName,
@@ -202,13 +222,20 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
     endTHour,
     isAvailable,
     hall,
-    capacityHall
+    capacityHall,
   } = req.body;
 
-  if (!sessionName || !description || !day || !dateSession || !startHour || !endTHour || !isAvailable) {
-    res.json("todos los campos deben estar completos")
+  if (
+    !sessionName ||
+    !description ||
+    !day ||
+    !dateSession ||
+    !startHour ||
+    !endTHour ||
+    !isAvailable
+  ) {
+    res.json("todos los campos deben estar completos");
   }
-
 
   try {
     await Session.findByIdAndUpdate(sessionId, {
@@ -221,7 +248,7 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
       endTHour,
       isAvailable,
       hall,
-      capacityHall
+      capacityHall,
     });
 
     res.json("Session modifed");
@@ -230,27 +257,17 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
   }
 });
 
-
 // DELETE "/api/events/:eventId/sessions/:sessionId" => Eliminar una session
 
 router.delete("/:eventId/sessions/:sessionId", async (req, res, next) => {
-
   const sessionId = req.params.sessionId;
   try {
-    await Session.findByIdAndDelete(sessionId)
+    await Session.findByIdAndDelete(sessionId);
 
-  res.json("Esta sesión fue eliminada.")
+    res.json("Esta sesión fue eliminada.");
   } catch (error) {
-    next(error)
+    next(error);
   }
-})
-
-
-
-
-
-
-
-
+});
 
 module.exports = router;
