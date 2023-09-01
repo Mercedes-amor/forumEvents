@@ -5,12 +5,12 @@ const Session = require("../models/Session.model");
 
 // RUTAS DE LOS EVENTOS
 
-// GET "/api/events" => lista de todos los eventos.
+// GET "/api/events" => lista de todos los eventos
 
 router.get("/", async (req, res, next) => {
   try {
     const response = await Event.find()
-    console.log(response);
+   
 
     res.json(response);
   } catch (error) {
@@ -63,14 +63,17 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// GET "/api/events/:eventId" => Detalles de un evento
+// GET "/api/events/:eventId" => Detalles de un evento  y sus sesiones.
 
 router.get("/:eventId", async (req, res, next) => {
   const eventId = req.params.eventId;
   try {
-    const response = await Event.findById(eventId);
-    console.log(response);
-    res.json(response);
+    const responseEvent = await Event.findById(eventId);
+    const responseSession = await Session.find({ eventName: req.params.eventId })
+   
+
+    res.json({responseEvent, responseSession} );
+
   } catch (error) {
     next(error);
   }
@@ -89,7 +92,7 @@ router.put("/:eventId", async (req, res, next) => {
     sector,
     imgEvent,
     description,
-  } = req.body;
+  } = req.body.editEvent;
 
   if (!eventName || !startDate || !endDate || !itsFree || !capacity || !sector || !description) {
     res.json("todos los campos deben estar completos")
@@ -136,18 +139,18 @@ router.delete("/:eventId", async (req, res, next) => {
 // RUTAS DE LAS SESIONES
 
 // GET "/api/events/:eventId/sessions" => lista todos las sesiones de un evento
-router.get("/:eventId/sessions", async (req, res, next) => {
+// router.get("/:eventId/sessions", async (req, res, next) => {
 
-  try {
-    const response = await Session.find({ eventName: req.params.eventId })
-      .populate("eventName")
-    res.json(response)
-    console.log("params", req.params.eventId)
+//   try {
+//     const response = await Session.find({ eventName: req.params.eventId })
+//       .populate("eventName")
+//     res.json(response)
+//     console.log("params", req.params.eventId)
 
-  } catch (error) {
-    next(error)
-  }
-})
+//   } catch (error) {
+//     next(error)
+//   }
+// })
 
 
 // POST "/api/events/:eventId/sessions" => añadir sesiones a un evento
