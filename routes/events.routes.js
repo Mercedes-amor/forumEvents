@@ -9,11 +9,7 @@ const Session = require("../models/Session.model");
 
 router.get("/", async (req, res, next) => {
   try {
-    const response = await Event.find().select({
-      eventName: 1,
-      sector: 1,
-      imgEvent: 1,
-    });
+    const response = await Event.find()
     console.log(response);
 
     res.json(response);
@@ -25,6 +21,13 @@ router.get("/", async (req, res, next) => {
 // POST "/api/events" => creamos un nuevo evento
 
 router.post("/", async (req, res, next) => {
+  console.log("viene del body" , req.body)
+  let bodyImg;
+  if (req.body.newEvent.imgEvent === "") {
+    bodyImg = "https://ipmark.com/wp-content/uploads/eventos-5-800x445.jpg"
+  } else {
+    bodyImg = req.body.newEvent.imgEvent 
+  }
   const {
     eventName,
     startDate,
@@ -32,15 +35,16 @@ router.post("/", async (req, res, next) => {
     itsFree,
     capacity,
     sector,
-    imgEvent,
     description,
-  } = req.body;
+  } = req.body.newEvent;
 
 
   if (!eventName || !startDate || !endDate || !itsFree || !capacity || !sector || !description) {
     res.json("todos los campos deben estar completos")
   }
 
+ 
+  
   try {
     await Event.create({
       eventName,
@@ -49,7 +53,7 @@ router.post("/", async (req, res, next) => {
       itsFree,
       capacity,
       sector,
-      imgEvent,
+      imgEvent : bodyImg ,
       description,
     });
 
@@ -90,7 +94,6 @@ router.put("/:eventId", async (req, res, next) => {
   if (!eventName || !startDate || !endDate || !itsFree || !capacity || !sector || !description) {
     res.json("todos los campos deben estar completos")
   }
-
 
   try {
     await Event.findByIdAndUpdate(eventId, {

@@ -25,10 +25,13 @@ capacity: {
 },
 sector: {
     type: String,
-    enum: ["tecnológico", "medicina", "ciencia", "gastronómico","ocio"],
+    enum: ["Otro","tecnológico", "medicina", "ciencia", "gastronómico","ocio"],
     required: true
 },
-imgEvent: String,
+imgEvent: {
+    type:String,
+//    default: "https://ipmark.com/wp-content/uploads/eventos-5-800x445.jpg"
+},
 description: {
     type: String,
     required: true
