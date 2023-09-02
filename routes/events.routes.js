@@ -210,20 +210,19 @@ router.post("/:eventId/sessions", async (req, res, next) => {
 // PUT "/api/events/:eventId/sessions/:sessionId" => Editar detalles de una sesión
 
 router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
-  const { sessionId, eventId } = req.params;
-
+const { sessionId, eventId} = req.params
   const {
     sessionName,
-    eventName,
-    description,
+     description,
     day,
     dateSession,
     startHour,
-    endTHour,
+    endHour,
     isAvailable,
     hall,
     capacityHall,
-  } = req.body;
+   
+  } = req.body.editSession;
 
   if (
     !sessionName ||
@@ -231,10 +230,11 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
     !day ||
     !dateSession ||
     !startHour ||
-    !endTHour ||
+    !endHour ||
     !isAvailable
   ) {
-    res.json("todos los campos deben estar completos");
+    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" })
+    return;;
   }
 
   try {
@@ -245,7 +245,7 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
       day,
       dateSession,
       startHour,
-      endTHour,
+      endHour,
       isAvailable,
       hall,
       capacityHall,
