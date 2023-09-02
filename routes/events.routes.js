@@ -21,10 +21,10 @@ router.get("/", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   console.log("viene del body", req.body);
   let bodyImg;
-  if (req.body.newEvent.imgEvent === "") {
+  if (req.body.imgEvent === "") {
     bodyImg = "https://ipmark.com/wp-content/uploads/eventos-5-800x445.jpg";
   } else {
-    bodyImg = req.body.newEvent.imgEvent;
+    bodyImg = req.body.imgEvent;
   }
   const {
     eventName,
@@ -34,7 +34,7 @@ router.post("/", async (req, res, next) => {
     capacity,
     sector,
     description,
-  } = req.body.newEvent;
+  } = req.body;
 
   if (
     !eventName ||

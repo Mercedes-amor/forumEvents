@@ -15,4 +15,7 @@ router.use("/events", eventsRouter)
 const usersRouter = require("./users.routes")
 router.use("/users", usersRouter)
 
+const uploadRoutes = require("./upload.routes");
+router.use("/upload", uploadRoutes);
+
 module.exports = router;
