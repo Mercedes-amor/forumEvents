@@ -2,7 +2,7 @@ const router = require("express").Router();
 const isAuthenticated = require("../middlewares/isAuthenticated");
 const Event = require("../models/Event.model");
 const Session = require("../models/Session.model");
-const User = require("../models/User.model")
+const User = require("../models/User.model");
 
 // RUTAS DE LOS EVENTOS
 
@@ -11,9 +11,11 @@ const User = require("../models/User.model")
 router.get("/", isAuthenticated, async (req, res, next) => {
   try {
     const eventData = await Event.find();
-    const userData = await User.findById(req.payload._id).select({ eventsAsistance: 1 })
+    const userData = await User.findById(req.payload._id).select({
+      eventsAsistance: 1,
+    });
 
-    const response = { eventData, userData }
+    const response = { eventData, userData };
     res.json(response);
   } catch (error) {
     next(error);
@@ -25,8 +27,9 @@ router.get("/", isAuthenticated, async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   console.log("viene del body", req.body);
   let bodyImg;
-  if (req.body.imgEvent === "") {
-    bodyImg = "https://ipmark.com/wp-content/uploads/eventos-5-800x445.jpg";
+  if (req.body.imgEvent === null) {
+    bodyImg =
+      "https://res.cloudinary.com/dz2owkkwa/image/upload/v1693741450/forumEvents/jhunvhpsrfikrs2jdch2.jpg";
   } else {
     bodyImg = req.body.imgEvent;
   }
@@ -49,7 +52,8 @@ router.post("/", async (req, res, next) => {
     !sector ||
     !description
   ) {
-    res.json("todos los campos deben estar completos");
+    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" });
+    return;
   }
 
   try {
@@ -186,8 +190,8 @@ router.post("/:eventId/sessions", async (req, res, next) => {
     !endHour ||
     !isAvailable
   ) {
-    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" })
-    return;;
+    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" });
+    return;
   }
 
   try {
@@ -214,7 +218,7 @@ router.post("/:eventId/sessions", async (req, res, next) => {
 // PUT "/api/events/:eventId/sessions/:sessionId" => Editar detalles de una sesión
 
 router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
-  const { sessionId, eventId } = req.params
+  const { sessionId, eventId } = req.params;
   const {
     sessionName,
     description,
@@ -225,20 +229,21 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
     isAvailable,
     hall,
     capacityHall,
-
+    hostedBy,
+    idAsistant,
   } = req.body.editSession;
+  console.log("QUIERO VER ESTO", req.body.editSession);
 
   if (
-    !sessionName ||
-    !description ||
-    !day ||
-    !dateSession ||
-    !startHour ||
-    !endHour ||
-    !isAvailable
+    sessionName === "" ||
+    description === "" ||
+    day === 0 ||
+    dateSession === "" ||
+    startHour === "" ||
+    endHour === ""
   ) {
-    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" })
-    return;;
+    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" });
+    return;
   }
 
   try {
@@ -253,6 +258,8 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
       isAvailable,
       hall,
       capacityHall,
+      hostedBy,
+      $push: { assistants: idAsistant },
     });
 
     res.json("Session modifed");
@@ -279,53 +286,44 @@ router.delete("/:eventId/sessions/:sessionId", async (req, res, next) => {
 // PUT "/api/events/:eventId/inscription" => lista de todos los eventos
 
 router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
-  console.log("este es el console", req.payload)
-  const { _id, email, role } = req.payload
-  const { eventCapacity, eventsUserArr } = req.body
-  console.log("eventsUserArr", eventsUserArr)
+  console.log("este es el console", req.payload);
+  const { _id, email, role } = req.payload;
+  const { eventCapacity, eventsUserArr } = req.body;
+  console.log("eventsUserArr", eventsUserArr);
   try {
-
     if (eventsUserArr.includes(req.params.eventId) === true) {
-
       await User.findByIdAndUpdate(req.payload._id, {
-
         $pull: { eventsAsistance: req.params.eventId },
-
-      })
+      });
       await Event.findByIdAndUpdate(req.params.eventId, {
-        $inc: { capacity: +1 }
-      })
-      res.json("Te has dado de baja del evento")
+        $inc: { capacity: +1 },
+      });
+      res.json("Te has dado de baja del evento");
       return;
-    } else if (eventsUserArr.includes(req.params.eventId) === false && req.body.eventCapacity > 0) {
+    } else if (
+      eventsUserArr.includes(req.params.eventId) === false &&
+      req.body.eventCapacity > 0
+    ) {
       await User.findByIdAndUpdate(req.payload._id, {
-
         $push: { eventsAsistance: req.params.eventId },
-
-      })
+      });
       // .populate("eventsAsistance")
       await Event.findByIdAndUpdate(req.params.eventId, {
-        $inc: { capacity: -1 }
-      })
-      res.json("Te has inscrito al evento")
+        $inc: { capacity: -1 },
+      });
+      res.json("Te has inscrito al evento");
       return;
-    } else if (eventsUserArr.includes(req.params.eventId) === false && req.body.eventCapacity < 1) {
+    } else if (
+      eventsUserArr.includes(req.params.eventId) === false &&
+      req.body.eventCapacity < 1
+    ) {
       res.status(400).json({ errorMessage: "No quedan plazas disponibles" });
-      res.json("No quedan plazas para este evento")
+      res.json("No quedan plazas para este evento");
       return;
     }
-
-
   } catch (error) {
-    next(error)
+    next(error);
   }
-
-
-
-
-
-
-})
-
+});
 
 module.exports = router;
