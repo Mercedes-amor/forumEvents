@@ -234,6 +234,9 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
   } = req.body.editSession;
   console.log("QUIERO VER ESTO", req.body.editSession);
 
+let newAsistant = +0
+idAsistant ? newAsistant = -1 : null
+
   if (
     sessionName === "" ||
     description === "" ||
@@ -257,9 +260,10 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
       endHour,
       isAvailable,
       hall,
-      capacityHall,
       hostedBy,
       $push: { assistants: idAsistant },
+      $inc: {capacityHall: newAsistant}
+
     });
 
     res.json("Session modifed");
