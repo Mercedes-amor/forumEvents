@@ -237,7 +237,7 @@ router.post("/:eventId/sessions", async (req, res, next) => {
 
 // PUT "/api/events/:eventId/sessions/:sessionId" => Editar detalles de una sesión
 
-router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
+router.put("/:eventId/sessions/:sessionId", isAuthenticated, async (req, res, next) => {
   const { sessionId, eventId } = req.params;
   const {
     sessionName,
@@ -303,6 +303,40 @@ idAsistant ? newAsistant = -1 : null
     next(error);
   }
 });
+
+
+//PUT "/api/events/:eventId/sessions/:sessionId/join" => Apuntarse a una sesion 
+router.put("/:eventId/sessions/:sessionId/join",isAuthenticated, async (req, res, next) => {
+const {assistants, capacityHall} =  req.body
+const { sessionId } = req.params;
+console.log(req.params)
+console.log(req.body)
+console.log(req.payload)
+try {
+  if (assistants.includes(req.payload._id) === true) {
+    await Session.findByIdAndUpdate(sessionId, {
+      $pull: { assistants: req.payload._id }
+   
+    })
+    // !assistants.includes(req.payload._id) && 
+    return;
+  } else if (assistants.length < capacityHall) {
+    await Session.findByIdAndUpdate(sessionId, {
+      $push: { assistants: req.payload._id }
+   
+    })
+    return;
+  } else {
+    res.json({ succesMessage: "No quedan plazas disponibles para esta sesión" });
+  }
+
+} catch (error) {
+  res.status(400).json({ errorMessage: "" });
+  return;
+}
+
+})
+
 
 // DELETE "/api/events/:eventId/sessions/:sessionId" => Eliminar una session
 
