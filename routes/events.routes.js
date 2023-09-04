@@ -319,12 +319,14 @@ try {
    
     })
     // !assistants.includes(req.payload._id) && 
+    res.json("desapuntado correctamente en la sesión")
     return;
   } else if (assistants.length < capacityHall) {
     await Session.findByIdAndUpdate(sessionId, {
       $push: { assistants: req.payload._id }
    
     })
+    res.json("Inscrito correctamente en la sesión")
     return;
   } else {
     res.json({ succesMessage: "No quedan plazas disponibles para esta sesión" });
@@ -332,7 +334,7 @@ try {
 
 } catch (error) {
   res.status(400).json({ errorMessage: "" });
-  return;
+  
 }
 
 })
