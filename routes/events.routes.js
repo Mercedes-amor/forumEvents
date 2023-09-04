@@ -361,7 +361,7 @@ router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
   console.log("este es el console", req.payload);
   const { _id, email, role } = req.payload;
   const { eventCapacity, eventsUserArr } = req.body;
-  console.log("eventsUserArr", eventsUserArr);
+  console.log("eventsUserArr = ", eventsUserArr);
   try {
     if (eventsUserArr.includes(req.params.eventId) === true) {
       await User.findByIdAndUpdate(req.payload._id, {
