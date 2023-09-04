@@ -89,6 +89,9 @@ router.get("/:eventId", async (req, res, next) => {
     let sessionsArray =[]
     
  console.log("Ver esto",responseSession.length)
+ if (responseSession.length > 0) {
+
+ 
     for (let i = 0; i< responseSession[responseSession.length-1].day; i++) {
   
       sessionsArray.push([])
@@ -99,8 +102,9 @@ router.get("/:eventId", async (req, res, next) => {
       sessionsArray[responseSession[i].day - 1].push(responseSession[i])
       
     }
+  }
     console.log("sessionsArray",sessionsArray)
-    res.json({ responseEvent, responseSession });
+    res.json({ responseEvent, responseSession, sessionsArray });
   } catch (error) {
     next(error);
   }
@@ -267,8 +271,15 @@ idAsistant ? newAsistant = -1 : null
   }
 
   try {
-    // if (assistants.includes(assistants._id))
-    await Session.findByIdAndUpdate(sessionId, {
+    if (idAsistant && assistants.includes(idAsistant) === true) {
+      await Session.findByIdAndUpdate(sessionId, {
+        $pull: { assistants: idAsistant },
+        $inc: {capacityHall: +1}
+      })
+
+      return;
+    } else {
+          await Session.findByIdAndUpdate(sessionId, {
       sessionName,
       eventName: eventId,
       description,
@@ -283,6 +294,9 @@ idAsistant ? newAsistant = -1 : null
       $inc: {capacityHall: newAsistant}
 
     });
+    return;
+    }
+
 
     res.json("Session modifed");
   } catch (error) {
