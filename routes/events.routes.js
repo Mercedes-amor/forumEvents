@@ -355,41 +355,35 @@ router.delete("/:eventId/sessions/:sessionId", async (req, res, next) => {
 
 //RUTAS USUARIOS INCRITOS
 
-// PUT "/api/events/:eventId/inscription" => Inscribirse a un evento, modificar array eventos inscritos del user
+// PUT "/api/events/:eventId/inscription" => Inscribirse a un evento, (modificar array eventos inscritos del user)
 
 router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
-  console.log("este es el console", req.payload);
+  // console.log("este es el console", req.payload);
+   const eventId = req.params.eventId.toString()
   const { _id, email, role } = req.payload;
-  const { eventCapacity, eventsUserArr } = req.body;
+  const { eventsUserArr } = req.body
   console.log("eventsUserArr = ", eventsUserArr);
+ 
   try {
+     const eventCapacity = await Event.findById(req.params.eventId).select( {capacity: 1})
+     const usersArrayInEvent = await User.find({eventsAsistance:{$in: eventId}})
+     console.log("capacidad evento",eventCapacity)
+     console.log("userArrayInEvent",usersArrayInEvent.length)
     if (eventsUserArr.includes(req.params.eventId) === true) {
       await User.findByIdAndUpdate(req.payload._id, {
         $pull: { eventsAsistance: req.params.eventId },
       });
-      await Event.findByIdAndUpdate(req.params.eventId, {
-        $inc: { capacity: +1 },
-      });
-      res.json("Te has dado de baja del evento");
+    
+      res.json( "Te has dado de baja del evento");
       return;
-    } else if (
-      eventsUserArr.includes(req.params.eventId) === false &&
-      req.body.eventCapacity > 0
-    ) {
+    } else if ( eventsUserArr.includes(req.params.eventId) === false && usersArrayInEvent.length < eventCapacity.capacity) {
       await User.findByIdAndUpdate(req.payload._id, {
         $push: { eventsAsistance: req.params.eventId },
       });
-      // .populate("eventsAsistance")
-      await Event.findByIdAndUpdate(req.params.eventId, {
-        $inc: { capacity: -1 },
-      });
       res.json("Te has inscrito al evento");
       return;
-    } else if (
-      eventsUserArr.includes(req.params.eventId) === false &&
-      req.body.eventCapacity < 1
+    } else if ( eventsUserArr.includes(req.params.eventId) === false && usersArrayInEvent.length >= eventCapacity.capacity
     ) {
-      res.status(400).json({ errorMessage: "No quedan plazas disponibles" });
       res.json("No quedan plazas para este evento");
       return;
     }
