@@ -82,8 +82,24 @@ router.get("/:eventId", async (req, res, next) => {
     const responseEvent = await Event.findById(eventId);
     const responseSession = await Session.find({
       eventName: req.params.eventId,
-    });
+    })
+    // .populate("assistants")
+    .sort("day");
+    // console.log("sessionArray",responseSession)
+    let sessionsArray =[]
+    
+ console.log("Ver esto",responseSession.length)
+    for (let i = 0; i< responseSession[responseSession.length-1].day; i++) {
+  
+      sessionsArray.push([])
 
+    }
+    for (let i = 0; i< responseSession.length; i++ ){
+      console.log(responseSession[i].day - 1)
+      sessionsArray[responseSession[i].day - 1].push(responseSession[i])
+      
+    }
+    console.log("sessionsArray",sessionsArray)
     res.json({ responseEvent, responseSession });
   } catch (error) {
     next(error);
@@ -231,6 +247,7 @@ router.put("/:eventId/sessions/:sessionId", async (req, res, next) => {
     capacityHall,
     hostedBy,
     idAsistant,
+    assistants
   } = req.body.editSession;
   console.log("QUIERO VER ESTO", req.body.editSession);
 
@@ -250,6 +267,7 @@ idAsistant ? newAsistant = -1 : null
   }
 
   try {
+    // if (assistants.includes(assistants._id))
     await Session.findByIdAndUpdate(sessionId, {
       sessionName,
       eventName: eventId,
@@ -287,7 +305,7 @@ router.delete("/:eventId/sessions/:sessionId", async (req, res, next) => {
 
 //RUTAS USUARIOS INCRITOS
 
-// PUT "/api/events/:eventId/inscription" => lista de todos los eventos
+// PUT "/api/events/:eventId/inscription" => Inscribirse a un evento, modificar array eventos inscritos del user
 
 router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
   console.log("este es el console", req.payload);
