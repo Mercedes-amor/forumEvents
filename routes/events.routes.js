@@ -36,6 +36,7 @@ router.post("/", async (req, res, next) => {
     startDate,
     endDate,
     itsFree,
+    price,
     capacity,
     sector,
     description,
@@ -60,6 +61,7 @@ router.post("/", async (req, res, next) => {
       startDate,
       endDate,
       itsFree,
+      price,
       capacity,
       sector,
       imgEvent: bodyImg,
@@ -275,14 +277,14 @@ idAsistant ? newAsistant = -1 : null
   }
 
   try {
-  //   if (idAsistant && assistants.includes(idAsistant) === true) {
-  //     await Session.findByIdAndUpdate(sessionId, {
-  //       $pull: { assistants: idAsistant },
-  //       $inc: {capacityHall: +1}
-  //     })
+    // if (idAsistant && assistants.includes(idAsistant) === true) {
+    //   await Session.findByIdAndUpdate(sessionId, {
+    //     $pull: { assistants: idAsistant },
+    //     $inc: {capacityHall: +1}
+    //   })
 
-  //     return;
-  //   } else {
+    //   return;
+    // } else {
           await Session.findByIdAndUpdate(sessionId, {
       sessionName,
       eventName: eventId,
@@ -297,13 +299,13 @@ idAsistant ? newAsistant = -1 : null
       $push: { assistants: idAsistant },
       $inc: {capacityHall: newAsistant}
 
-    });
+    });    
     res.json("Session modifed");
+
     return;
-    // }
+    
 
 
-   
   } catch (error) {
     next(error);
   }
