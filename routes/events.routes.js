@@ -275,14 +275,14 @@ idAsistant ? newAsistant = -1 : null
   }
 
   try {
-    if (idAsistant && assistants.includes(idAsistant) === true) {
-      await Session.findByIdAndUpdate(sessionId, {
-        $pull: { assistants: idAsistant },
-        $inc: {capacityHall: +1}
-      })
+  //   if (idAsistant && assistants.includes(idAsistant) === true) {
+  //     await Session.findByIdAndUpdate(sessionId, {
+  //       $pull: { assistants: idAsistant },
+  //       $inc: {capacityHall: +1}
+  //     })
 
-      return;
-    } else {
+  //     return;
+  //   } else {
           await Session.findByIdAndUpdate(sessionId, {
       sessionName,
       eventName: eventId,
@@ -298,11 +298,12 @@ idAsistant ? newAsistant = -1 : null
       $inc: {capacityHall: newAsistant}
 
     });
-    return;
-    }
-
-
     res.json("Session modifed");
+    return;
+    // }
+
+
+   
   } catch (error) {
     next(error);
   }

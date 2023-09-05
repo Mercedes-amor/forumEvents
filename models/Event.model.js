@@ -35,8 +35,8 @@ imgEvent: {
 description: {
     type: String,
     required: true
-}
-
+},
+price: Number
 })
 
 const Event = model("Event", eventSchema);
