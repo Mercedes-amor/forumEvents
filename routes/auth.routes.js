@@ -109,6 +109,7 @@ router.post("/login", async (req, res, next) => {
 
 })
 
+
 // GET "/api/auth/verify" => indicar al Front que el usuario está activo
 
 router.get("/verify", isAuthenticated, (req, res, next) => {
