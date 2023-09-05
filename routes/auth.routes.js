@@ -23,6 +23,14 @@ router.post("/signup", async (req, res, next) => {
     }
 
 
+    const regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm;
+    if (regexPassword.test(password) === false) {
+      res.status(400).json({ errorMessage:
+
+       "La contraseña debe tener al menos, una mayuscula, una minuscula, un caracter especial y tener 8 caracteres o más",
+      });
+      return;
+    }
     try {
 
         const foundEmail = await User.findOne({ email })
