@@ -11,11 +11,9 @@ const User = require("../models/User.model");
 router.get("/", isAuthenticated, async (req, res, next) => {
   try {
     const eventData = await Event.find();
-    const userData = await User.findById(req.payload._id).select({
-      eventsAsistance: 1,
-    });
+    
 
-    const response = { eventData, userData };
+    const response = { eventData};
     res.json(response);
   } catch (error) {
     next(error);
@@ -76,18 +74,24 @@ router.post("/", async (req, res, next) => {
 
 // GET "/api/events/:eventId" => Detalles de un evento  y sus sesiones.
 
-router.get("/:eventId", async (req, res, next) => {
+router.get("/:eventId", isAuthenticated, async (req, res, next) => {
   const eventId = req.params.eventId;
-  try {
+  try {  
+    const userData = await User.findById(req.payload._id).select({
+      eventsAsistance: 1,
+    });
     const responseEvent = await Event.findById(eventId);
     const responseSession = await Session.find({
       eventName: req.params.eventId,
     })
+    const usersArrayInEvent = await User.find({eventsAsistance:{$in: eventId}})
     // .populate("assistants")
     .sort("day");
     // console.log("sessionArray",responseSession)
     let sessionsArray =[]
-    
+    let eventArray =[]
+    // console.log("userData",userData)
+  
  console.log("Ver esto",responseSession.length)
  if (responseSession.length > 0) {
 
@@ -104,7 +108,7 @@ router.get("/:eventId", async (req, res, next) => {
     }
   }
     console.log("sessionsArray",sessionsArray)
-    res.json({ responseEvent, responseSession, sessionsArray });
+    res.json({ responseEvent, responseSession, sessionsArray, userData, usersArrayInEvent });
   } catch (error) {
     next(error);
   }
