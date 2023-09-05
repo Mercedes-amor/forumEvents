@@ -7,7 +7,7 @@ const isAuthenticated = require("../middlewares/isAuthenticated")
 
 // GET "/api/user/:userId" => pagina personal del usuario
 
-router.get("/:userId", isAuthenticated, async (req, res, next)=> {
+router.get("/userProfile", isAuthenticated, async (req, res, next)=> {
     console.log(req.payload)
 try {
     const response = await User.findById(req.payload._id).
@@ -22,7 +22,7 @@ try {
 
 // DELETE "/api/user/:userId" => eliminar usuario
 
-router.delete("/:userId", isAuthenticated, async (req, res, next)=> {
+router.delete("/deleteAcount", isAuthenticated, async (req, res, next)=> {
     console.log(req.payload)
 try {
      await User.findByIdAndDelete(req.payload._id)
