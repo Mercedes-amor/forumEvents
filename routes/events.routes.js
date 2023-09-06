@@ -377,17 +377,14 @@ router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
      console.log("capacidad evento",eventCapacity)
      console.log("userArrayInEvent",usersArrayInEvent.length)
     if (eventsUserArr.includes(req.params.eventId) === true) {
-      await User.findByIdAndUpdate(req.payload._id, {
+      await User.findByIdAndUpdate(_id, {
         $pull: { eventsAsistance: req.params.eventId },
       });
-      // await Session.updateMany({assistants: {$in: _id},
-      //    $pull: {assistants: _id}
-          
-      // });
+      await Session.updateMany({assistants: {$in: _id}},{$pull: {assistants: _id}});
       res.json( "Te has dado de baja del evento");
       return;
     } else if ( eventsUserArr.includes(req.params.eventId) === false && usersArrayInEvent.length < eventCapacity.capacity) {
-      await User.findByIdAndUpdate(req.payload._id, {
+      await User.findByIdAndUpdate(_id, {
         $push: { eventsAsistance: req.params.eventId },
       });
       res.json("Te has inscrito al evento");
