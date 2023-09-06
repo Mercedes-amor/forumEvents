@@ -8,13 +8,25 @@ const User = require("../models/User.model");
 
 // GET "/api/events" => lista de todos los eventos
 
-router.get("/", isAuthenticated, async (req, res, next) => {
-  try {
-    const eventData = await Event.find();
-    
+router.get("/:query", isAuthenticated, async (req, res, next) => {
+  console.log(req.body);
+  const query = req.params.query;
+  console.log(query);
 
-    const response = { eventData};
+  try {
+    if (query === "todos") {
+
+      const eventData = await Event.find().sort("startDate")
+      const response = { eventData};
+      res.json(response);
+     return;
+    } else {
+
+    const eventData = await Event.find({ sector: query }).sort("startDate");
+
+    const response = { eventData };
     res.json(response);
+    }
   } catch (error) {
     next(error);
   }
@@ -76,41 +88,46 @@ router.post("/", async (req, res, next) => {
 
 // GET "/api/events/:eventId" => Detalles de un evento  y sus sesiones.
 
-router.get("/:eventId", isAuthenticated, async (req, res, next) => {
+router.get("/:eventId/details", isAuthenticated, async (req, res, next) => {
   const eventId = req.params.eventId;
-  try {  
+  try {
     const userData = await User.findById(req.payload._id).select({
       eventsAsistance: 1,
     });
     const responseEvent = await Event.findById(eventId);
     const responseSession = await Session.find({
       eventName: req.params.eventId,
-    })
-    const usersArrayInEvent = await User.find({eventsAsistance:{$in: eventId}})
-    // .populate("assistants")
-    .sort("day");
+    });
+    const usersArrayInEvent = await User.find({
+      eventsAsistance: { $in: eventId },
+    }).sort("day");
     // console.log("sessionArray",responseSession)
-    let sessionsArray =[]
-    let eventArray =[]
+    let sessionsArray = [];
+    let eventArray = [];
     // console.log("userData",userData)
-  
- console.log("Ver esto",responseSession.length)
- if (responseSession.length > 0) {
 
- 
-    for (let i = 0; i< responseSession[responseSession.length-1].day; i++) {
-  
-      sessionsArray.push([])
-
+    console.log("Ver esto", responseSession.length);
+    if (responseSession.length > 0) {
+      for (
+        let i = 0;
+        i < responseSession[responseSession.length - 1].day;
+        i++
+      ) {
+        sessionsArray.push([]);
+      }
+      for (let i = 0; i < responseSession.length; i++) {
+        console.log(responseSession[i].day - 1);
+        sessionsArray[responseSession[i].day - 1].push(responseSession[i]);
+      }
     }
-    for (let i = 0; i< responseSession.length; i++ ){
-      console.log(responseSession[i].day - 1)
-      sessionsArray[responseSession[i].day - 1].push(responseSession[i])
-      
-    }
-  }
-    console.log("sessionsArray",sessionsArray)
-    res.json({ responseEvent, responseSession, sessionsArray, userData, usersArrayInEvent });
+    console.log("sessionsArray", sessionsArray);
+    res.json({
+      responseEvent,
+      responseSession,
+      sessionsArray,
+      userData,
+      usersArrayInEvent,
+    });
   } catch (error) {
     next(error);
   }
@@ -243,51 +260,13 @@ router.post("/:eventId/sessions", async (req, res, next) => {
 
 // PUT "/api/events/:eventId/sessions/:sessionId" => Editar detalles de una sesión
 
-router.put("/:eventId/sessions/:sessionId", isAuthenticated, async (req, res, next) => {
-  const { sessionId, eventId } = req.params;
-  const {
-    sessionName,
-    description,
-    day,
-    dateSession,
-    startHour,
-    endHour,
-    isAvailable,
-    hall,
-    capacityHall,
-    hostedBy,
-    idAsistant,
-    assistants
-  } = req.body.editSession;
-  console.log("QUIERO VER ESTO", req.body.editSession);
-
-let newAsistant = +0
-idAsistant ? newAsistant = -1 : null
-
-  if (
-    sessionName === "" ||
-    description === "" ||
-    day === 0 ||
-    dateSession === "" ||
-    startHour === "" ||
-    endHour === ""
-  ) {
-    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" });
-    return;
-  }
-
-  try {
-    // if (idAsistant && assistants.includes(idAsistant) === true) {
-    //   await Session.findByIdAndUpdate(sessionId, {
-    //     $pull: { assistants: idAsistant },
-    //     $inc: {capacityHall: +1}
-    //   })
-
-    //   return;
-    // } else {
-          await Session.findByIdAndUpdate(sessionId, {
+router.put(
+  "/:eventId/sessions/:sessionId",
+  isAuthenticated,
+  async (req, res, next) => {
+    const { sessionId, eventId } = req.params;
+    const {
       sessionName,
-      eventName: eventId,
       description,
       day,
       dateSession,
@@ -295,57 +274,96 @@ idAsistant ? newAsistant = -1 : null
       endHour,
       isAvailable,
       hall,
+      capacityHall,
       hostedBy,
-      $push: { assistants: idAsistant },
-      $inc: {capacityHall: newAsistant}
+      idAsistant,
+      assistants,
+    } = req.body.editSession;
+    console.log("QUIERO VER ESTO", req.body.editSession);
 
-    });    
-    res.json("Session modifed");
+    let newAsistant = +0;
+    idAsistant ? (newAsistant = -1) : null;
 
-    return;
-    
+    if (
+      sessionName === "" ||
+      description === "" ||
+      day === 0 ||
+      dateSession === "" ||
+      startHour === "" ||
+      endHour === ""
+    ) {
+      res
+        .status(400)
+        .json({ errorMessage: "Todos los campos son obligatorios" });
+      return;
+    }
 
+    try {
+      // if (idAsistant && assistants.includes(idAsistant) === true) {
+      //   await Session.findByIdAndUpdate(sessionId, {
+      //     $pull: { assistants: idAsistant },
+      //     $inc: {capacityHall: +1}
+      //   })
 
-  } catch (error) {
-    next(error);
+      //   return;
+      // } else {
+      await Session.findByIdAndUpdate(sessionId, {
+        sessionName,
+        eventName: eventId,
+        description,
+        day,
+        dateSession,
+        startHour,
+        endHour,
+        isAvailable,
+        hall,
+        hostedBy,
+        $push: { assistants: idAsistant },
+        $inc: { capacityHall: newAsistant },
+      });
+      res.json("Session modifed");
+
+      return;
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
-
-//PUT "/api/events/:eventId/sessions/:sessionId/join" => Apuntarse a una sesion 
-router.put("/:eventId/sessions/:sessionId/join",isAuthenticated, async (req, res, next) => {
-const {assistants, capacityHall} =  req.body
-const { sessionId } = req.params;
-console.log(req.params)
-console.log(req.body)
-console.log(req.payload)
-try {
-  if (assistants.includes(req.payload._id) === true) {
-    await Session.findByIdAndUpdate(sessionId, {
-      $pull: { assistants: req.payload._id }
-   
-    })
-    // !assistants.includes(req.payload._id) && 
-    res.json("desapuntado correctamente en la sesión")
-    return;
-  } else if (assistants.length < capacityHall) {
-    await Session.findByIdAndUpdate(sessionId, {
-      $push: { assistants: req.payload._id }
-   
-    })
-    res.json("Inscrito correctamente en la sesión")
-    return;
-  } else {
-    res.json({ succesMessage: "No quedan plazas disponibles para esta sesión" });
+//PUT "/api/events/:eventId/sessions/:sessionId/join" => Apuntarse a una sesion
+router.put(
+  "/:eventId/sessions/:sessionId/join",
+  isAuthenticated,
+  async (req, res, next) => {
+    const { assistants, capacityHall } = req.body;
+    const { sessionId } = req.params;
+    console.log(req.params);
+    console.log(req.body);
+    console.log(req.payload);
+    try {
+      if (assistants.includes(req.payload._id) === true) {
+        await Session.findByIdAndUpdate(sessionId, {
+          $pull: { assistants: req.payload._id },
+        });
+        // !assistants.includes(req.payload._id) &&
+        res.json("desapuntado correctamente en la sesión");
+        return;
+      } else if (assistants.length < capacityHall) {
+        await Session.findByIdAndUpdate(sessionId, {
+          $push: { assistants: req.payload._id },
+        });
+        res.json("Inscrito correctamente en la sesión");
+        return;
+      } else {
+        res.json({
+          succesMessage: "No quedan plazas disponibles para esta sesión",
+        });
+      }
+    } catch (error) {
+      res.status(400).json({ errorMessage: "" });
+    }
   }
-
-} catch (error) {
-  res.status(400).json({ errorMessage: "" });
-  
-}
-
-})
-
+);
 
 // DELETE "/api/events/:eventId/sessions/:sessionId" => Eliminar una session
 
@@ -366,30 +384,42 @@ router.delete("/:eventId/sessions/:sessionId", async (req, res, next) => {
 
 router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
   // console.log("este es el console", req.payload);
-   const eventId = req.params.eventId.toString()
+  const eventId = req.params.eventId.toString();
   const { _id, email, role } = req.payload;
-  const { eventsUserArr } = req.body
+  const { eventsUserArr } = req.body;
   console.log("eventsUserArr = ", eventsUserArr);
- 
+
   try {
-     const eventCapacity = await Event.findById(req.params.eventId).select( {capacity: 1})
-     const usersArrayInEvent = await User.find({eventsAsistance:{$in: eventId}})
-     console.log("capacidad evento",eventCapacity)
-     console.log("userArrayInEvent",usersArrayInEvent.length)
+    const eventCapacity = await Event.findById(req.params.eventId).select({
+      capacity: 1,
+    });
+    const usersArrayInEvent = await User.find({
+      eventsAsistance: { $in: eventId },
+    });
+    console.log("capacidad evento", eventCapacity);
+    console.log("userArrayInEvent", usersArrayInEvent.length);
     if (eventsUserArr.includes(req.params.eventId) === true) {
       await User.findByIdAndUpdate(_id, {
         $pull: { eventsAsistance: req.params.eventId },
       });
-      await Session.updateMany({assistants: {$in: _id}},{$pull: {assistants: _id}});
-      res.json( "Te has dado de baja del evento");
+      await Session.updateMany(
+        { assistants: { $in: _id } },
+        { $pull: { assistants: _id } }
+      );
+      res.json("Te has dado de baja del evento");
       return;
-    } else if ( eventsUserArr.includes(req.params.eventId) === false && usersArrayInEvent.length < eventCapacity.capacity) {
+    } else if (
+      eventsUserArr.includes(req.params.eventId) === false &&
+      usersArrayInEvent.length < eventCapacity.capacity
+    ) {
       await User.findByIdAndUpdate(_id, {
         $push: { eventsAsistance: req.params.eventId },
       });
       res.json("Te has inscrito al evento");
       return;
-    } else if ( eventsUserArr.includes(req.params.eventId) === false && usersArrayInEvent.length >= eventCapacity.capacity
+    } else if (
+      eventsUserArr.includes(req.params.eventId) === false &&
+      usersArrayInEvent.length >= eventCapacity.capacity
     ) {
       res.json("No quedan plazas para este evento");
       return;

@@ -4,6 +4,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY); // make sure to
 const isAuthenticated = require("../middlewares/isAuthenticated");
 const Event = require("../models/Event.model");
 const Payment = require("../models/Payment.model")
+const User = require("../models/User.model")
 
 
 router.post("/create-payment-intent", isAuthenticated, async (req, res, next) => {
@@ -56,17 +57,24 @@ await Payment.create({
 });
 
 
-router.patch("/update-payment-intent", async (req, res, next) => {
+router.patch("/update-payment-intent", isAuthenticated, async (req, res, next) => {
     const { clientSecret, paymentIntentId } = req.body;
   
     try {
   
-      await Payment.findOneAndUpdate({
+      const response = await Payment.findOneAndUpdate({
         clientSecret: clientSecret,
         paymentIntentId: paymentIntentId,
       },{ 
         status: "succeeded" 
+      }, {new:true});
+
+      // aqui tienen response.product = id del evento
+      await User.findByIdAndUpdate(req.payload._id, {
+        $push: { eventsAsistance: response.product },
       });
+      
+
   
       res.status(200).json();
   
