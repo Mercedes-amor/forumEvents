@@ -131,9 +131,9 @@ router.get("/:eventId/details", isAuthenticated, async (req, res, next) => {
   }
 });
 
-// PUT "/api/events/:eventId" => Editar detalles de un evento
+// PUT "/api/events/:eventId/edit" => Editar detalles de un evento
 
-router.put("/:eventId", async (req, res, next) => {
+router.put("/:eventId/edit", async (req, res, next) => {
   const eventId = req.params.eventId;
   const {
     eventName,
@@ -142,9 +142,11 @@ router.put("/:eventId", async (req, res, next) => {
     itsFree,
     capacity,
     sector,
-    imgEvent,
+    
     description,
   } = req.body.editEvent;
+   const {imageUrl} = req.body
+   console.log("CONSOLE LOG DEL BODY EDIT EVENT",req.body)
 
   if (
     !eventName ||
@@ -166,7 +168,7 @@ router.put("/:eventId", async (req, res, next) => {
       itsFree,
       capacity,
       sector,
-      imgEvent,
+      imgEvent : imageUrl,
       description,
     });
 
