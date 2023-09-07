@@ -155,10 +155,12 @@ router.put("/:eventId/edit", async (req, res, next) => {
     itsFree,
     capacity,
     sector,
-
+     price,
     description,
   } = req.body.editEvent;
   const { imageUrl } = req.body;
+console.log(" ESTE CONSOLE",req.body.editEvent)
+
   // console.log("CONSOLE LOG DEL BODY EDIT EVENT", req.body);
 
   if (
@@ -169,24 +171,47 @@ router.put("/:eventId/edit", async (req, res, next) => {
     !capacity ||
     !sector ||
     !description
+    
   ) {
     res.status(400).json({ errorMessage: "Todos los campos son obligatorios" });
     return;
   }
 
   try {
-    await Event.findByIdAndUpdate(eventId, {
-      eventName,
-      startDate,
-      endDate,
-      itsFree,
-      capacity,
-      sector,
-      imgEvent: imageUrl,
-      description,
-    });
+    if (imageUrl === null) {
+      await Event.findByIdAndUpdate(eventId, {
+        eventName,
+        startDate,
+        endDate,
+        itsFree,
+        capacity,
+        sector,
+        description,
+        price
+      });
 
-    res.json("Evento modificado");
+      res.json("Evento modificado");
+
+      return;
+    } else {
+      await Event.findByIdAndUpdate(eventId, {
+        eventName,
+        startDate,
+        endDate,
+        itsFree,
+        capacity,
+        sector,
+        imgEvent: imageUrl,
+        description,
+        price
+      });
+
+      res.json("Evento modificado");
+
+      return;
+    }
+
+  
   } catch (error) {
     next(error);
   }
