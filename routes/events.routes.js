@@ -8,27 +8,38 @@ const User = require("../models/User.model");
 
 // GET "/api/:query" => lista de todos los eventos filtrados
 
-router.get("/:query",  async (req, res, next) => {
+router.get("/:query", async (req, res, next) => {
   // console.log(req.body);
   const query = req.params.query;
   // console.log(query);
 
   try {
-    if (query === "todos") {
-      const eventData = await Event.find().sort("startDate");
-      const response = { eventData };
-      res.json(response);
-      return;
-    } else {
-      const eventData = await Event.find({ sector: query }).sort("startDate");
-
-      const response = { eventData };
-      res.json(response);
-    }
+    const eventData = await Event.find(
+      query === "todos" ? null : { sector: query }
+    ).sort("startDate");
+    const response = { eventData };
+    res.json(response);
   } catch (error) {
     next(error);
   }
 });
+
+// try {
+//   if (query === "todos") {
+//     const eventData = await Event.find( query === "todos" ? null : { sector: query }).sort("startDate");
+//     const response = { eventData };
+//     res.json(response);
+//     return;
+//   } else {
+//     const eventData = await Event.find().sort("startDate");
+
+//     const response = { eventData };
+//     res.json(response);
+//   }
+// } catch (error) {
+//   next(error);
+// }
+// });
 
 // POST "/api/events" => creamos un nuevo evento
 
