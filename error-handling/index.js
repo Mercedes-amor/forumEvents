@@ -7,6 +7,12 @@ module.exports = (app) => {
   app.use((err, req, res, next) => {
     // whenever you call next(err), this middleware will handle the error
     // always logs the error
+
+    //si el error recibido es 401 lo enviamos así al cliente
+    if (err.status === 401) {
+      res.status(401).json({ errorMessage: "Token no existe o no válido" })
+      return;
+    }
     console.error("ERROR", req.method, req.path, err);
 
     // only render if the error ocurred before sending the response
