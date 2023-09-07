@@ -15,17 +15,15 @@ router.get("/:query", isAuthenticated, async (req, res, next) => {
 
   try {
     if (query === "todos") {
-
-      const eventData = await Event.find().sort("startDate")
-      const response = { eventData};
+      const eventData = await Event.find().sort("startDate");
+      const response = { eventData };
       res.json(response);
-     return;
+      return;
     } else {
+      const eventData = await Event.find({ sector: query }).sort("startDate");
 
-    const eventData = await Event.find({ sector: query }).sort("startDate");
-
-    const response = { eventData };
-    res.json(response);
+      const response = { eventData };
+      res.json(response);
     }
   } catch (error) {
     next(error);
@@ -106,17 +104,17 @@ router.get("/:eventId/details", isAuthenticated, async (req, res, next) => {
     let eventArray = [];
     // console.log("userData",userData)
 
-    console.log("Ver esto", responseSession.length);
+    // console.log("Ver esto", responseSession.length);
+    let lastDay = 0;
     if (responseSession.length > 0) {
-      for (
-        let i = 0;
-        i < responseSession[responseSession.length - 1].day;
-        i++
-      ) {
-        sessionsArray.push([]);
-      }
       for (let i = 0; i < responseSession.length; i++) {
-        console.log(responseSession[i].day - 1);
+        if (responseSession[i].day > lastDay) {
+          lastDay = responseSession[i].day;
+        }
+      }
+       for (let i =0; i < lastDay ; i++) { sessionsArray.push([]);}
+      for (let i = 0; i < responseSession.length; i++) {
+        // console.log(responseSession[i].day - 1);
         sessionsArray[responseSession[i].day - 1].push(responseSession[i]);
       }
     }
