@@ -1,5 +1,3 @@
-
-
 const router = require("express").Router();
 
 const uploader = require("../middlewares/cloudinary.config.js");

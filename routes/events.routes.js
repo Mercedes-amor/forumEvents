@@ -4,14 +4,14 @@ const Event = require("../models/Event.model");
 const Session = require("../models/Session.model");
 const User = require("../models/User.model");
 
-// RUTAS DE LOS EVENTOS
+// RUTAS DE LOS EVENTO
 
-// GET "/api/events" => lista de todos los eventos
+// GET "/api/:query" => lista de todos los eventos filtrados
 
-router.get("/:query", isAuthenticated, async (req, res, next) => {
-  console.log(req.body);
+router.get("/:query",  async (req, res, next) => {
+  // console.log(req.body);
   const query = req.params.query;
-  console.log(query);
+  // console.log(query);
 
   try {
     if (query === "todos") {
@@ -33,7 +33,7 @@ router.get("/:query", isAuthenticated, async (req, res, next) => {
 // POST "/api/events" => creamos un nuevo evento
 
 router.post("/", async (req, res, next) => {
-  console.log("viene del body", req.body);
+  // console.log("viene del body", req.body);
   let bodyImg;
   if (req.body.imgEvent === null) {
     bodyImg =
@@ -84,7 +84,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-// GET "/api/events/:eventId" => Detalles de un evento  y sus sesiones.
+// GET "/api/events/:eventId/details" => Detalles de un evento  y sus sesiones.
 
 router.get("/:eventId/details", isAuthenticated, async (req, res, next) => {
   const eventId = req.params.eventId;
@@ -112,13 +112,15 @@ router.get("/:eventId/details", isAuthenticated, async (req, res, next) => {
           lastDay = responseSession[i].day;
         }
       }
-       for (let i =0; i < lastDay ; i++) { sessionsArray.push([]);}
+      for (let i = 0; i < lastDay; i++) {
+        sessionsArray.push([]);
+      }
       for (let i = 0; i < responseSession.length; i++) {
         // console.log(responseSession[i].day - 1);
         sessionsArray[responseSession[i].day - 1].push(responseSession[i]);
       }
     }
-    console.log("sessionsArray", sessionsArray);
+    // console.log("sessionsArray", sessionsArray);
     res.json({
       responseEvent,
       responseSession,
@@ -142,11 +144,11 @@ router.put("/:eventId/edit", async (req, res, next) => {
     itsFree,
     capacity,
     sector,
-    
+
     description,
   } = req.body.editEvent;
-   const {imageUrl} = req.body
-   console.log("CONSOLE LOG DEL BODY EDIT EVENT",req.body)
+  const { imageUrl } = req.body;
+  // console.log("CONSOLE LOG DEL BODY EDIT EVENT", req.body);
 
   if (
     !eventName ||
@@ -157,7 +159,8 @@ router.put("/:eventId/edit", async (req, res, next) => {
     !sector ||
     !description
   ) {
-    res.json("todos los campos deben estar completos");
+    res.status(400).json({ errorMessage: "Todos los campos son obligatorios" });
+    return;
   }
 
   try {
@@ -168,7 +171,7 @@ router.put("/:eventId/edit", async (req, res, next) => {
       itsFree,
       capacity,
       sector,
-      imgEvent : imageUrl,
+      imgEvent: imageUrl,
       description,
     });
 
@@ -279,7 +282,7 @@ router.put(
       idAsistant,
       assistants,
     } = req.body.editSession;
-    console.log("QUIERO VER ESTO", req.body.editSession);
+    // console.log("QUIERO VER ESTO", req.body.editSession);
 
     let newAsistant = +0;
     idAsistant ? (newAsistant = -1) : null;
@@ -299,14 +302,6 @@ router.put(
     }
 
     try {
-      // if (idAsistant && assistants.includes(idAsistant) === true) {
-      //   await Session.findByIdAndUpdate(sessionId, {
-      //     $pull: { assistants: idAsistant },
-      //     $inc: {capacityHall: +1}
-      //   })
-
-      //   return;
-      // } else {
       await Session.findByIdAndUpdate(sessionId, {
         sessionName,
         eventName: eventId,
@@ -345,22 +340,23 @@ router.put(
         await Session.findByIdAndUpdate(sessionId, {
           $pull: { assistants: req.payload._id },
         });
-        // !assistants.includes(req.payload._id) &&
-        res.json("desapuntado correctamente en la sesión");
+
+        res.json({ successFullMessage: "te has dado de baja de la sesión" });
         return;
       } else if (assistants.length < capacityHall) {
         await Session.findByIdAndUpdate(sessionId, {
           $push: { assistants: req.payload._id },
         });
-        res.json("Inscrito correctamente en la sesión");
+        res.json({ successFullMessage: "Te has inscrito en la sesión" });
         return;
       } else {
-        res.json({
-          succesMessage: "No quedan plazas disponibles para esta sesión",
+        res.status(400).json({
+          errorMessage: "No quedan plazas disponibles para esta sesión",
         });
+        return;
       }
     } catch (error) {
-      res.status(400).json({ errorMessage: "" });
+      next(error);
     }
   }
 );
@@ -372,7 +368,7 @@ router.delete("/:eventId/sessions/:sessionId", async (req, res, next) => {
   try {
     await Session.findByIdAndDelete(sessionId);
 
-    res.json("Esta sesión fue eliminada.");
+    res.json({ successFullMessage: "Sesión eliminada con éxito" });
   } catch (error) {
     next(error);
   }
@@ -387,7 +383,7 @@ router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
   const eventId = req.params.eventId.toString();
   const { _id, email, role } = req.payload;
   const { eventsUserArr } = req.body;
-  console.log("eventsUserArr = ", eventsUserArr);
+  // console.log("eventsUserArr = ", eventsUserArr);
 
   try {
     const eventCapacity = await Event.findById(req.params.eventId).select({
@@ -396,8 +392,8 @@ router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
     const usersArrayInEvent = await User.find({
       eventsAsistance: { $in: eventId },
     });
-    console.log("capacidad evento", eventCapacity);
-    console.log("userArrayInEvent", usersArrayInEvent.length);
+    // console.log("capacidad evento", eventCapacity);
+    // console.log("userArrayInEvent", usersArrayInEvent.length);
     if (eventsUserArr.includes(req.params.eventId) === true) {
       await User.findByIdAndUpdate(_id, {
         $pull: { eventsAsistance: req.params.eventId },
@@ -406,7 +402,7 @@ router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
         { assistants: { $in: _id } },
         { $pull: { assistants: _id } }
       );
-      res.json("Te has dado de baja del evento");
+      res.json({ successFullMessage: "Te has dado de baja del evento" });
       return;
     } else if (
       eventsUserArr.includes(req.params.eventId) === false &&
@@ -415,13 +411,15 @@ router.put("/:eventId/inscription", isAuthenticated, async (req, res, next) => {
       await User.findByIdAndUpdate(_id, {
         $push: { eventsAsistance: req.params.eventId },
       });
-      res.json("Te has inscrito al evento");
+      res.json({ successFullMessage: "Te has inscrito al evento" });
       return;
     } else if (
       eventsUserArr.includes(req.params.eventId) === false &&
       usersArrayInEvent.length >= eventCapacity.capacity
     ) {
-      res.json("No quedan plazas para este evento");
+      res.status(400).json({
+        errorMessage: "No quedan plazas disponibles para este evento",
+      });
       return;
     }
   } catch (error) {
