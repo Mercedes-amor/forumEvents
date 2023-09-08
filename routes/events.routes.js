@@ -167,7 +167,7 @@ console.log(" ESTE CONSOLE",req.body.editEvent)
     !eventName ||
     !startDate ||
     !endDate ||
-    !itsFree ||
+    itsFree == null ||
     !capacity ||
     !sector ||
     !description
