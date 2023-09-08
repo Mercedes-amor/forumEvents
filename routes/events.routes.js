@@ -233,21 +233,7 @@ router.delete("/:eventId", async (req, res, next) => {
   }
 });
 
-// RUTAS DE LAS SESIONES
 
-// GET "/api/events/:eventId/sessions" => lista todos las sesiones de un evento
-// router.get("/:eventId/sessions", async (req, res, next) => {
-
-//   try {
-//     const response = await Session.find({ eventName: req.params.eventId })
-//       .populate("eventName")
-//     res.json(response)
-//     console.log("params", req.params.eventId)
-
-//   } catch (error) {
-//     next(error)
-//   }
-// })
 
 // POST "/api/events/:eventId/sessions" => añadir sesiones a un evento
 router.post("/:eventId/sessions", async (req, res, next) => {
